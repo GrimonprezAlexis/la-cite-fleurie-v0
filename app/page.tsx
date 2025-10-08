@@ -68,12 +68,16 @@ export default function Home() {
                             alt="La Cité Fleurie"
                             width={700}
                             height={467}
-                            className="w-[280px] sm:w-[380px] md:w-[500px] lg:w-[650px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
+                            className="w-[180px] sm:w-[280px] md:w-[400px] lg:w-[550px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
                             priority
                           />
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-4xl mb-8 md:mb-12 animate-slide-up font-light tracking-wide" style={{animationDelay: '0.2s'}}>
-                          Restaurant · Pizzeria · Lounge Bar
+                        <p className="text-xl sm:text-2xl md:text-3xl mb-8 md:mb-12 animate-slide-up font-light tracking-wide flex items-center gap-3 md:gap-4" style={{animationDelay: '0.2s'}}>
+                          <span>Restaurant</span>
+                          <span className="text-[#d3cbc2] text-3xl sm:text-4xl md:text-5xl">•</span>
+                          <span>Pizzeria</span>
+                          <span className="text-[#d3cbc2] text-3xl sm:text-4xl md:text-5xl">•</span>
+                          <span>Lounge Bar</span>
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up" style={{animationDelay: '0.3s'}}>
                           <Link href="/menu">
