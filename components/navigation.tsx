@@ -50,7 +50,7 @@ export function Navigation() {
               isScrolled ? 'w-44 h-14' : 'w-60 h-20'
             }`}>
               <Image
-                src="/logo.png"
+                src="/logo_header.png/logo.png"
                 alt="La Cité Fleurie"
                 fill
                 className="object-contain"
