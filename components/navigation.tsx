@@ -47,7 +47,7 @@ export function Navigation() {
             className="flex items-center transition-all duration-500 hover:scale-105"
           >
             <div className={`relative transition-all duration-500 ${
-              isScrolled ? 'w-44 h-14' : 'w-60 h-20'
+              isScrolled ? 'w-44 h-14' : 'w-60 h-40'
             }`}>
               <Image
                 src="/logo_header.png/logo.png"
