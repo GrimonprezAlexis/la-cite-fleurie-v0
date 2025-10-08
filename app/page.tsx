@@ -62,13 +62,13 @@ export default function Home() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="container mx-auto px-4 text-center text-white">
                       <div className="max-w-5xl mx-auto">
-                        <div className="mb-4 md:mb-6 animate-scale-in flex justify-center">
+                        <div className="mb-8 md:mb-12 animate-scale-in flex justify-center">
                           <Image
                             src="/logo.png"
                             alt="La Cité Fleurie"
                             width={700}
                             height={467}
-                            className="w-[380px] sm:w-[500px] md:w-[650px] lg:w-[800px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
+                            className="w-[280px] sm:w-[380px] md:w-[500px] lg:w-[650px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
                             priority
                           />
                         </div>
