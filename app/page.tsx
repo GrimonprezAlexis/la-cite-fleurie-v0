@@ -61,18 +61,18 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/60 to-transparent" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="container mx-auto px-4 text-center text-white">
-                      <div className="max-w-6xl mx-auto">
-                        <div className="mb-6 animate-scale-in flex justify-center">
+                      <div className="max-w-5xl mx-auto">
+                        <div className="mb-8 md:mb-12 animate-scale-in flex justify-center">
                           <Image
                             src="/logo.png"
                             alt="La Cité Fleurie"
-                            width={800}
-                            height={533}
-                            className="w-[320px] sm:w-[450px] md:w-[600px] lg:w-[750px] xl:w-[850px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
+                            width={700}
+                            height={467}
+                            className="w-[280px] sm:w-[380px] md:w-[500px] lg:w-[650px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(211,203,194,0.9)] hover:scale-105 transition-transform duration-500"
                             priority
                           />
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-4xl mb-10 md:mb-14 animate-slide-up font-light tracking-wide" style={{animationDelay: '0.2s'}}>
+                        <p className="text-2xl sm:text-3xl md:text-4xl mb-8 md:mb-12 animate-slide-up font-light tracking-wide" style={{animationDelay: '0.2s'}}>
                           Restaurant · Pizzeria · Lounge Bar
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up" style={{animationDelay: '0.3s'}}>
