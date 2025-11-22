@@ -194,15 +194,15 @@ export default function Home() {
               <div className="space-y-6 lg:space-y-8">
                 <div className="overflow-hidden rounded-3xl shadow-2xl hover:shadow-[#d3cbc2]/20 transition-all duration-500">
                   <img
-                    src="https://images.pexels.com/photos/1307698/pexels-photo-1307698.jpeg?auto=compress&cs=tinysrgb&w=800"
+                    src="/files_536226-1763826203252-restaurant.png"
                     alt="Intérieur restaurant"
                     className="w-full h-72 lg:h-80 object-cover hover:scale-110 transition-transform duration-700"
                   />
                 </div>
                 <div className="overflow-hidden rounded-3xl shadow-2xl hover:shadow-[#d3cbc2]/20 transition-all duration-500">
                   <img
-                    src="https://images.pexels.com/photos/1435706/pexels-photo-1435706.jpeg?auto=compress&cs=tinysrgb&w=800"
-                    alt="Plat gastronomique"
+                    src="/files_536226-1763826213918-terasse.png"
+                    alt="Terrasse"
                     className="w-full h-56 lg:h-64 object-cover hover:scale-110 transition-transform duration-700"
                   />
                 </div>
@@ -210,15 +210,15 @@ export default function Home() {
               <div className="space-y-6 lg:space-y-8 pt-12 lg:pt-16">
                 <div className="overflow-hidden rounded-3xl shadow-2xl hover:shadow-[#d3cbc2]/20 transition-all duration-500">
                   <img
-                    src="https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800"
-                    alt="Pizza"
+                    src="/files_536226-1763826195434-lounge bar.png"
+                    alt="Lounge Bar"
                     className="w-full h-56 lg:h-64 object-cover hover:scale-110 transition-transform duration-700"
                   />
                 </div>
                 <div className="overflow-hidden rounded-3xl shadow-2xl hover:shadow-[#d3cbc2]/20 transition-all duration-500">
                   <img
-                    src="https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800"
-                    alt="Plat italien"
+                    src="/IMG_8782-min.png"
+                    alt="Salle du restaurant"
                     className="w-full h-72 lg:h-80 object-cover hover:scale-110 transition-transform duration-700"
                   />
                 </div>
