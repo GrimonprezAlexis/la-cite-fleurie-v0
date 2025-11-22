@@ -47,7 +47,7 @@ export function Navigation() {
             className="flex items-center transition-all duration-500 hover:scale-105"
           >
             <Image
-              src="/ChatGPT Image 22 nov. 2025, 15_40_10.png"
+              src="/ChatGPT Image 22 nov. 2025, 15_55_59.png"
               alt="La Cité Fleurie"
               width={131}
               height={87}
