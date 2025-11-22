@@ -39,6 +39,7 @@ function AdminMenuContent() {
     title: '',
     description: '',
     file: null as File | null,
+    fileUrl: '',
   });
 
   useEffect(() => {
@@ -65,6 +66,15 @@ function AdminMenuContent() {
     }
   }
 
+  async function handleFileUpload(file: File): Promise<string> {
+    const { storage } = await import('@/lib/api/firebase/config');
+    const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+
+    const storageRef = ref(storage, `menus/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  }
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
 
@@ -80,6 +90,14 @@ function AdminMenuContent() {
     setUploading(true);
 
     try {
+      let fileUrl = formData.fileUrl;
+      let fileType = '';
+
+      if (formData.file) {
+        fileUrl = await handleFileUpload(formData.file);
+        fileType = formData.file.type;
+      }
+
       const response = await fetch('/api/menu', {
         method: 'POST',
         headers: {
@@ -88,6 +106,8 @@ function AdminMenuContent() {
         body: JSON.stringify({
           title: formData.title,
           description: formData.description || '',
+          fileUrl: fileUrl || null,
+          fileType: fileType || null,
           order: menuItems.length,
         }),
       });
@@ -101,7 +121,7 @@ function AdminMenuContent() {
         description: 'Menu ajouté avec succès',
       });
 
-      setFormData({ title: '', description: '', file: null });
+      setFormData({ title: '', description: '', file: null, fileUrl: '' });
       setIsDialogOpen(false);
       fetchMenuItems();
     } catch (error: any) {
@@ -122,6 +142,18 @@ function AdminMenuContent() {
     }
 
     try {
+      if (item.fileUrl) {
+        const { storage } = await import('@/lib/api/firebase/config');
+        const { ref, deleteObject } = await import('firebase/storage');
+
+        try {
+          const fileRef = ref(storage, item.fileUrl);
+          await deleteObject(fileRef);
+        } catch (storageError) {
+          console.warn('Error deleting file from storage:', storageError);
+        }
+      }
+
       const response = await fetch(`/api/menu?id=${item.id}`, {
         method: 'DELETE',
       });
@@ -199,6 +231,35 @@ function AdminMenuContent() {
                     />
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="file">Fichier (PDF ou Image)</Label>
+                    <Input
+                      id="file"
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setFormData({ ...formData, file });
+                      }}
+                    />
+                    <p className="text-xs text-gray-500">
+                      Formats acceptés: PDF, JPG, PNG (Max 10MB)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fileUrl">Ou URL du fichier</Label>
+                    <Input
+                      id="fileUrl"
+                      type="url"
+                      placeholder="https://example.com/menu.pdf"
+                      value={formData.fileUrl}
+                      onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                    />
+                    <p className="text-xs text-gray-500">
+                      Vous pouvez soit télécharger un fichier, soit fournir une URL
+                    </p>
+                  </div>
 
                   <Button
                     type="submit"

@@ -1,13 +1,52 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/api/firebase/admin';
 
+const defaultHours = [
+  { dayOfWeek: 'Lundi', isOpen: true, openTime: '12:00', closeTime: '14:00', specialNote: 'Midi uniquement', order: 1 },
+  { dayOfWeek: 'Mardi', isOpen: true, openTime: '12:00', closeTime: '14:00', specialNote: 'Midi uniquement', order: 2 },
+  { dayOfWeek: 'Mercredi', isOpen: true, openTime: '12:00', closeTime: '14:00', specialNote: 'Midi uniquement', order: 3 },
+  { dayOfWeek: 'Jeudi', isOpen: true, openTime: '12:00', closeTime: '22:00', specialNote: 'Service continu', order: 4 },
+  { dayOfWeek: 'Vendredi', isOpen: true, openTime: '12:00', closeTime: '23:00', specialNote: 'Service continu', order: 5 },
+  { dayOfWeek: 'Samedi', isOpen: true, openTime: '12:00', closeTime: '23:00', specialNote: 'Service continu', order: 6 },
+  { dayOfWeek: 'Dimanche', isOpen: false, openTime: '', closeTime: '', specialNote: '', order: 7 },
+];
+
+async function initializeDefaultHours() {
+  if (!adminDb) return;
+
+  try {
+    const snapshot = await adminDb.collection('opening_hours').limit(1).get();
+
+    if (snapshot.empty) {
+      console.log('Initializing default opening hours...');
+
+      const batch = adminDb.batch();
+      defaultHours.forEach(hour => {
+        const docRef = adminDb!.collection('opening_hours').doc();
+        batch.set(docRef, {
+          ...hour,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      });
+
+      await batch.commit();
+      console.log('Default opening hours initialized successfully');
+    }
+  } catch (error) {
+    console.error('Error initializing default hours:', error);
+  }
+}
+
 export async function GET() {
   try {
     if (!adminDb) {
       return NextResponse.json({ success: true, data: [] });
     }
 
-    const hoursSnapshot = await adminDb.collection('opening_hours').orderBy('dayOfWeek').get();
+    await initializeDefaultHours();
+
+    const hoursSnapshot = await adminDb.collection('opening_hours').orderBy('order').get();
 
     const hours = hoursSnapshot.docs.map(doc => ({
       id: doc.id,
