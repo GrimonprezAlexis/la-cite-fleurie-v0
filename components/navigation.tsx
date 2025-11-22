@@ -47,7 +47,7 @@ export function Navigation() {
             className="flex items-center transition-all duration-500 hover:scale-105"
           >
             <div className={`relative transition-all duration-500 ${
-              isScrolled ? 'w-44 h-14' : 'w-60 h-40'
+              isScrolled ? 'w-32 h-10' : 'w-40 h-16'
             }`}>
               <Image
                 src="/ChatGPT Image 22 nov. 2025, 15_40_10.png"

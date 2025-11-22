@@ -68,7 +68,7 @@ export default function Home() {
                             alt="La Cité Fleurie"
                             width={700}
                             height={467}
-                            className="w-[230px] sm:w-[330px] md:w-[450px] lg:w-[600px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500"
+                            className="w-[270px] sm:w-[380px] md:w-[500px] lg:w-[650px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-500"
                             priority
                           />
                         </div>
