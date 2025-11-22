@@ -14,6 +14,7 @@ if (!getApps().length) {
           privateKey,
         }),
       });
+      console.log('Firebase Admin initialized ✅');
     }
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
