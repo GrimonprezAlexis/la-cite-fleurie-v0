@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import { AdminGuard } from '@/components/admin-guard';
 import { AdminNav } from '@/components/admin-nav';
-import { supabase, MenuItemType } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Trash2, Upload, FileText, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
+interface MenuItem {
+  id: string;
+  title: string;
+  description: string;
+  file_url: string;
+  file_type: string;
+  file_name: string;
+  display_order: number;
+  created_at: number;
+}
+
 function AdminMenuContent() {
-  const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,13 +50,13 @@ function AdminMenuContent() {
 
   async function fetchMenuItems() {
     try {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setMenuItems(data || []);
+      const q = query(collection(db, 'menu_items'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      } as MenuItem));
+      setMenuItems(items);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -68,46 +80,62 @@ function AdminMenuContent() {
       return;
     }
 
+    if (!formData.title.trim()) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez entrer un titre',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setUploading(true);
 
     try {
-      const fileExt = formData.file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `menus/${fileName}`;
+      const reader = new FileReader();
 
-      const { error: uploadError } = await supabase.storage
-        .from('menus')
-        .upload(filePath, formData.file);
+      reader.onload = async (event) => {
+        try {
+          const fileContent = event.target?.result;
+          const base64String = typeof fileContent === 'string'
+            ? fileContent.split(',')[1]
+            : '';
 
-      if (uploadError) throw uploadError;
+          const fileName = `${Date.now()}_${formData.file!.name}`;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('menus')
-        .getPublicUrl(filePath);
-
-      const { error: insertError } = await supabase
-        .from('menu_items')
-        .insert([
-          {
+          const newMenuItem: Omit<MenuItem, 'id'> = {
             title: formData.title,
-            description: formData.description || null,
-            file_url: publicUrl,
-            file_type: formData.file.type,
-            file_name: formData.file.name,
+            description: formData.description || '',
+            file_url: `data:${formData.file!.type};base64,${base64String}`,
+            file_type: formData.file!.type,
+            file_name: fileName,
             display_order: menuItems.length,
-          },
-        ]);
+            created_at: Date.now(),
+          };
 
-      if (insertError) throw insertError;
+          await addDoc(collection(db, 'menu_items'), newMenuItem);
 
-      toast({
-        title: 'Succès',
-        description: 'Menu ajouté avec succès',
-      });
+          toast({
+            title: 'Succès',
+            description: 'Menu ajouté avec succès',
+          });
 
-      setFormData({ title: '', description: '', file: null });
-      setIsDialogOpen(false);
-      fetchMenuItems();
+          setFormData({ title: '', description: '', file: null });
+          setIsDialogOpen(false);
+          fetchMenuItems();
+        } catch (error) {
+          console.error('Error:', error);
+          toast({
+            title: 'Erreur',
+            description: 'Échec de l\'ajout du menu',
+            variant: 'destructive',
+          });
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      reader.readAsDataURL(formData.file);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -115,28 +143,17 @@ function AdminMenuContent() {
         description: 'Échec de l\'upload du fichier',
         variant: 'destructive',
       });
-    } finally {
       setUploading(false);
     }
   }
 
-  async function handleDelete(item: MenuItemType) {
+  async function handleDelete(item: MenuItem) {
     if (!confirm(`Êtes-vous sûr de vouloir supprimer "${item.title}" ?`)) {
       return;
     }
 
     try {
-      const filePath = item.file_url.split('/menus/')[1];
-      if (filePath) {
-        await supabase.storage.from('menus').remove([`menus/${filePath}`]);
-      }
-
-      const { error } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', item.id);
-
-      if (error) throw error;
+      await deleteDoc(doc(db, 'menu_items', item.id));
 
       toast({
         title: 'Succès',
@@ -269,16 +286,19 @@ function AdminMenuContent() {
                       </p>
 
                       <div className="flex space-x-2">
-                        <a
-                          href={item.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1"
-                        >
-                          <Button variant="outline" size="sm" className="w-full">
-                            Voir
-                          </Button>
-                        </a>
+                        {isPDF(item.file_type) ? (
+                          <a href={item.file_url} download className="flex-1">
+                            <Button variant="outline" size="sm" className="w-full">
+                              Télécharger
+                            </Button>
+                          </a>
+                        ) : (
+                          <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                            <Button variant="outline" size="sm" className="w-full">
+                              Voir
+                            </Button>
+                          </a>
+                        )}
                         <Button
                           variant="destructive"
                           size="sm"

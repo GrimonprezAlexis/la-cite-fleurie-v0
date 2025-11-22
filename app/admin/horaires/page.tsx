@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { AdminGuard } from '@/components/admin-guard';
 import { AdminNav } from '@/components/admin-nav';
-import { supabase, OpeningHourType } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +13,18 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Edit, Save, X } from 'lucide-react';
 
+interface OpeningHour {
+  id: string;
+  day_of_week: string;
+  is_open: boolean;
+  open_time: string;
+  close_time: string;
+  special_note: string;
+  display_order: number;
+}
+
 function AdminHorairesContent() {
-  const [hours, setHours] = useState<OpeningHourType[]>([]);
+  const [hours, setHours] = useState<OpeningHour[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,13 +43,13 @@ function AdminHorairesContent() {
 
   async function fetchHours() {
     try {
-      const { data, error } = await supabase
-        .from('opening_hours')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setHours(data || []);
+      const q = query(collection(db, 'opening_hours'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const hoursData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      } as OpeningHour));
+      setHours(hoursData);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -51,7 +62,7 @@ function AdminHorairesContent() {
     }
   }
 
-  function startEdit(hour: OpeningHourType) {
+  function startEdit(hour: OpeningHour) {
     setEditingId(hour.id);
     setEditForm({
       is_open: hour.is_open,
@@ -75,18 +86,14 @@ function AdminHorairesContent() {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from('opening_hours')
-        .update({
-          is_open: editForm.is_open,
-          open_time: editForm.open_time,
-          close_time: editForm.close_time,
-          special_note: editForm.special_note || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
+      const hourRef = doc(db, 'opening_hours', id);
+      await updateDoc(hourRef, {
+        is_open: editForm.is_open,
+        open_time: editForm.open_time,
+        close_time: editForm.close_time,
+        special_note: editForm.special_note || '',
+        updated_at: new Date().toISOString(),
+      });
 
       toast({
         title: 'Succès',
