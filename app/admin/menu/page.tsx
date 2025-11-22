@@ -5,6 +5,7 @@ import { AdminGuard } from '@/components/admin-guard';
 import { AdminNav } from '@/components/admin-nav';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ interface MenuItem {
   file_url: string;
   file_type: string;
   file_name: string;
+  storage_path: string;
   display_order: number;
   created_at: number;
 }
@@ -37,6 +39,7 @@ function AdminMenuContent() {
   const [uploading, setUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const storage = getStorage();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -92,50 +95,34 @@ function AdminMenuContent() {
     setUploading(true);
 
     try {
-      const reader = new FileReader();
+      const fileName = `${Date.now()}_${formData.file.name}`;
+      const storagePath = `menus/${fileName}`;
+      const storageRef = ref(storage, storagePath);
 
-      reader.onload = async (event) => {
-        try {
-          const fileContent = event.target?.result;
-          const base64String = typeof fileContent === 'string'
-            ? fileContent.split(',')[1]
-            : '';
+      await uploadBytes(storageRef, formData.file);
+      const fileUrl = await getDownloadURL(storageRef);
 
-          const fileName = `${Date.now()}_${formData.file!.name}`;
-
-          const newMenuItem: Omit<MenuItem, 'id'> = {
-            title: formData.title,
-            description: formData.description || '',
-            file_url: `data:${formData.file!.type};base64,${base64String}`,
-            file_type: formData.file!.type,
-            file_name: fileName,
-            display_order: menuItems.length,
-            created_at: Date.now(),
-          };
-
-          await addDoc(collection(db, 'menu_items'), newMenuItem);
-
-          toast({
-            title: 'Succès',
-            description: 'Menu ajouté avec succès',
-          });
-
-          setFormData({ title: '', description: '', file: null });
-          setIsDialogOpen(false);
-          fetchMenuItems();
-        } catch (error) {
-          console.error('Error:', error);
-          toast({
-            title: 'Erreur',
-            description: 'Échec de l\'ajout du menu',
-            variant: 'destructive',
-          });
-        } finally {
-          setUploading(false);
-        }
+      const newMenuItem: Omit<MenuItem, 'id'> = {
+        title: formData.title,
+        description: formData.description || '',
+        file_url: fileUrl,
+        file_type: formData.file.type,
+        file_name: formData.file.name,
+        storage_path: storagePath,
+        display_order: menuItems.length,
+        created_at: Date.now(),
       };
 
-      reader.readAsDataURL(formData.file);
+      await addDoc(collection(db, 'menu_items'), newMenuItem);
+
+      toast({
+        title: 'Succès',
+        description: 'Menu ajouté avec succès',
+      });
+
+      setFormData({ title: '', description: '', file: null });
+      setIsDialogOpen(false);
+      fetchMenuItems();
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -143,6 +130,7 @@ function AdminMenuContent() {
         description: 'Échec de l\'upload du fichier',
         variant: 'destructive',
       });
+    } finally {
       setUploading(false);
     }
   }
@@ -153,6 +141,9 @@ function AdminMenuContent() {
     }
 
     try {
+      const storageRef = ref(storage, item.storage_path);
+      await deleteObject(storageRef);
+
       await deleteDoc(doc(db, 'menu_items', item.id));
 
       toast({
@@ -179,7 +170,10 @@ function AdminMenuContent() {
         <AdminNav />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Gestion du Menu</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Gestion du Menu</h1>
+              <p className="text-gray-600 mt-2">Gérez vos fichiers de menu (PDF ou images)</p>
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#d3cbc2] hover:bg-[#b8af9f] text-gray-900">
@@ -223,6 +217,7 @@ function AdminMenuContent() {
                       onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
                       required
                     />
+                    <p className="text-xs text-gray-500">PDF ou image (max 10 MB)</p>
                   </div>
 
                   <Button
@@ -260,45 +255,42 @@ function AdminMenuContent() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {menuItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <CardContent className="p-0">
                     {isPDF(item.file_type) ? (
-                      <div className="h-48 bg-gray-100 flex items-center justify-center">
+                      <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                         <FileText className="w-16 h-16 text-gray-400" />
                       </div>
                     ) : (
-                      <div className="h-48 relative">
+                      <div className="h-48 relative overflow-hidden bg-gray-100">
                         <img
                           src={item.file_url}
                           alt={item.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     )}
 
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">{item.title}</h3>
                       {item.description && (
-                        <p className="text-sm text-gray-600 mb-3">{item.description}</p>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{item.description}</p>
                       )}
-                      <p className="text-xs text-gray-500 mb-3">
-                        {isPDF(item.file_type) ? 'PDF' : 'Image'}
-                      </p>
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-xs text-gray-500 font-medium">
+                          {isPDF(item.file_type) ? 'PDF' : 'Image'}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
 
-                      <div className="flex space-x-2">
-                        {isPDF(item.file_type) ? (
-                          <a href={item.file_url} download className="flex-1">
-                            <Button variant="outline" size="sm" className="w-full">
-                              Télécharger
-                            </Button>
-                          </a>
-                        ) : (
-                          <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                            <Button variant="outline" size="sm" className="w-full">
-                              Voir
-                            </Button>
-                          </a>
-                        )}
+                      <div className="flex gap-2">
+                        <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" size="sm" className="w-full">
+                            {isPDF(item.file_type) ? 'Télécharger' : 'Voir'}
+                          </Button>
+                        </a>
                         <Button
                           variant="destructive"
                           size="sm"
