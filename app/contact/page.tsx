@@ -50,10 +50,11 @@ export default function ContactPage() {
         throw new Error('Erreur lors de l\'enregistrement du message');
       }
 
-      const emailResponse = await fetch('/api/send-email', {
+      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-contact-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
         },
         body: JSON.stringify(formData),
       });
