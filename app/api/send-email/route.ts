@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
     }
 
     await transporter.sendMail({
-      from: `"La Cité Fleurie - Contact" <${process.env.SMTP_USER}>`,
-      to: process.env.CONTACT_EMAIL,
+      from: `"La Cité Fleurie - Contact" <${process.env.CONTACT_FROM}>`,
+      to: process.env.CONTACT_FROM,
       replyTo: email,
       subject: `Nouveau message de ${name} - La Cité Fleurie`,
       html: generateEmailTemplate({ name, email, phone, message }),
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     // Send client email
     await transporter.sendMail({
-      from: process.env.NEXT_PUBLIC_SMTP_FROM,
+      from: process.env.CONTACT_FROM,
       to: email,
       subject: "Confirmation de votre demande de contact - La Cité Fleurie",
       html: `<p>Bonjour ${name},</p>
