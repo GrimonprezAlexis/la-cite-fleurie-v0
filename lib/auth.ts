@@ -1,4 +1,4 @@
-export const ADMIN_PASSWORD = '12345';
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '';
 
 export function checkAdminAuth(password: string): boolean {
   return password === ADMIN_PASSWORD;
