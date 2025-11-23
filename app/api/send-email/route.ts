@@ -1,34 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-const nodemailer = require('nodemailer');
+import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
-export async function POST(request: NextRequest) {
-  try {
-    const { name, email, phone, message } = await request.json();
+// Empêche Next de tenter une génération statique
+export const dynamic = "force-dynamic";
 
-    if (!name || !email || !message) {
-      return NextResponse.json(
-        { error: 'Tous les champs obligatoires doivent être remplis' },
-        { status: 400 }
-      );
-    }
+// Obligatoire pour utiliser Nodemailer (incompatible Edge Runtime)
+export const runtime = "nodejs";
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-    const htmlContent = `
+const generateEmailTemplate = (contexte: any) => {
+  const { name, email, phone, message } = contexte;
+  return `
       <!DOCTYPE html>
       <html lang="fr">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Nouveau message de contact - L'R de Ré</title>
+        <title>Nouveau message de contact - La Cité Fleurie</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f0;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f0; padding: 40px 20px;">
@@ -40,7 +37,7 @@ export async function POST(request: NextRequest) {
                 <tr>
                   <td style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 300; letter-spacing: 2px;">
-                      L'R DE RÉ
+                      La Cité Fleurie
                     </h1>
                     <div style="margin-top: 10px; height: 2px; width: 80px; background-color: #d4af37; margin-left: auto; margin-right: auto;"></div>
                   </td>
@@ -78,14 +75,18 @@ export async function POST(request: NextRequest) {
                                 <a href="mailto:${email}" style="color: #d4af37; text-decoration: none; margin-left: 10px;">${email}</a>
                               </td>
                             </tr>
-                            ${phone ? `
+                            ${
+                              phone
+                                ? `
                             <tr>
                               <td style="padding: 8px 0;">
                                 <strong style="color: #2c3e50; font-size: 14px;">Téléphone :</strong>
                                 <span style="color: #555; font-size: 14px; margin-left: 10px;">${phone}</span>
                               </td>
                             </tr>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                           </table>
                         </td>
                       </tr>
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
                 <tr>
                   <td style="background-color: #2c3e50; padding: 30px; text-align: center;">
                     <p style="margin: 0 0 10px 0; color: #ecf0f1; font-size: 12px;">
-                      <strong>L'R de Ré</strong> - Restaurant, Lounge Bar & Terrasse
+                      <strong>La Cité Fleurie</strong> - Restaurant, Lounge Bar & Terrasse
                     </p>
                     <p style="margin: 0 0 15px 0; color: #95a5a6; font-size: 11px;">
                       2 Quai de la Criée, 17590 Ars-en-Ré
@@ -122,35 +123,79 @@ export async function POST(request: NextRequest) {
       </body>
       </html>
     `;
+};
 
-    const mailOptions = {
-      from: `"L'R de Ré - Contact" <${process.env.SMTP_USER}>`,
+export async function POST(request: NextRequest) {
+  try {
+    const { name, email, phone, message } = await request.json();
+
+    // Verify SMTP configuration
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS
+    ) {
+      throw new Error("SMTP configuration is missing");
+    }
+
+    // Verify transporter connection
+    try {
+      await transporter.verify();
+      console.log("✅ SMTP connecté !");
+    } catch (error) {
+      console.error("SMTP Connection Error:", error);
+      throw new Error("Failed to connect to SMTP server");
+    }
+
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: "Tous les champs obligatoires doivent être remplis" },
+        { status: 400 }
+      );
+    }
+
+    await transporter.sendMail({
+      from: `"La Cité Fleurie - Contact" <${process.env.SMTP_USER}>`,
       to: process.env.CONTACT_EMAIL,
       replyTo: email,
-      subject: `Nouveau message de ${name} - L'R de Ré`,
-      html: htmlContent,
+      subject: `Nouveau message de ${name} - La Cité Fleurie`,
+      html: generateEmailTemplate({ name, email, phone, message }),
       text: `
-Nouveau message de contact
+      Nouveau message de contact
 
-Nom: ${name}
-Email: ${email}
-${phone ? `Téléphone: ${phone}` : ''}
+      Nom: ${name}
+      Email: ${email}
+      ${phone ? `Téléphone: ${phone}` : ""}
 
-Message:
-${message}
-      `.trim(),
-    };
+      Message:
+      ${message}
+            `.trim(),
+    });
 
-    await transporter.sendMail(mailOptions);
+    // Send client email
+    await transporter.sendMail({
+      from: process.env.NEXT_PUBLIC_SMTP_FROM,
+      to: email,
+      subject: "Confirmation de votre demande de contact - La Cité Fleurie",
+      html: `<p>Bonjour ${name},</p>
+        <p>Merci de nous avoir contactés. Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.</p>
+        <p>Cordialement,<br/>L'équipe de La Cité Fleurie</p>`,
+      text: `Bonjour ${name},
+
+        Merci de nous avoir contactés. Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.
+
+        Cordialement,
+        L'équipe de La Cité Fleurie`.trim(),
+    });
 
     return NextResponse.json(
-      { message: 'Email envoyé avec succès' },
+      { message: "Email envoyé avec succès" },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    console.error("Erreur lors de l'envoi de l'email:", error);
     return NextResponse.json(
-      { error: 'Erreur lors de l\'envoi de l\'email' },
+      { error: "Erreur lors de l'envoi de l'email" },
       { status: 500 }
     );
   }
