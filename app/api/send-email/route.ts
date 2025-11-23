@@ -107,7 +107,7 @@ const generateEmailTemplate = (contexte: any) => {
                       <strong>La Cité Fleurie</strong> - Restaurant, Lounge Bar & Terrasse
                     </p>
                     <p style="margin: 0 0 15px 0; color: #95a5a6; font-size: 11px;">
-                      Chem. de l'Echo 3, 1213 Onex (Suisse)
+                      2 Quai de la Criée, 17590 Ars-en-Ré
                     </p>
                     <div style="height: 1px; width: 60px; background-color: #d4af37; margin: 15px auto;"></div>
                     <p style="margin: 0; color: #95a5a6; font-size: 10px;">
@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
     }
 
     await transporter.sendMail({
-      from: `"La Cité Fleurie - Contact" <${process.env.CONTACT_FROM}>`,
-      to: process.env.CONTACT_FROM,
+      from: `"La Cité Fleurie - Contact" <${process.env.SMTP_USER}>`,
+      to: process.env.CONTACT_EMAIL,
       replyTo: email,
       subject: `Nouveau message de ${name} - La Cité Fleurie`,
       html: generateEmailTemplate({ name, email, phone, message }),
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     // Send client email
     await transporter.sendMail({
-      from: process.env.CONTACT_FROM,
+      from: process.env.NEXT_PUBLIC_SMTP_FROM,
       to: email,
       subject: "Confirmation de votre demande de contact - La Cité Fleurie",
       html: `<p>Bonjour ${name},</p>
