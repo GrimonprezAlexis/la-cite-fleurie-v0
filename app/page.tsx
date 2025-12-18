@@ -1,29 +1,44 @@
-'use client';
+"use client";
 
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Clock, MapPin, Phone, Music, Utensils, Pizza, Wine, Sparkles } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useScrollAnimation } from '@/hooks/use-scroll-animation';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Clock,
+  MapPin,
+  Phone,
+  Music,
+  Utensils,
+  Pizza,
+  Wine,
+  Sparkles,
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 const restaurantImages = [
   {
-    url: 'https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080',
-    alt: 'Pizza italienne margherita',
+    url: "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080",
+    alt: "Pizza italienne margherita",
   },
   {
-    url: '/1.png',
-    alt: 'Restaurant élégant',
+    url: "/1.png",
+    alt: "Restaurant élégant",
   },
   {
-    url: '/2.png',
-    alt: 'Cuisine française raffinée',
+    url: "/2.png",
+    alt: "Cuisine française raffinée",
   },
   {
-    url: '/3.png',
-    alt: 'Ambiance lounge bar',
+    url: "/3.png",
+    alt: "Ambiance lounge bar",
   },
 ];
 
@@ -58,25 +73,31 @@ export default function Home() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="container mx-auto px-4 text-center text-white">
                       <div className="max-w-5xl mx-auto flex flex-col items-center">
-                        <div className="mb-2 md:mb-1 animate-scale-in">
+                        <div className="mb-[-4rem] animate-scale-in">
                           <Image
                             src="/logo-v3.png"
                             alt="La Cité Fleurie"
                             width={680}
                             height={453}
                             className="h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-500"
-                            style={{ width: '680px', maxWidth: '90vw' }}
+                            style={{ width: "680px", maxWidth: "90vw" }}
                             priority
                           />
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-4xl mb-8 md:mb-12 animate-slide-up font-light tracking-wide flex items-center justify-center gap-4" style={{animationDelay: '0.2s'}}>
+                        <p
+                          className="text-2xl sm:text-3xl md:text-4xl mb-8 md:mb-12 animate-slide-up font-light tracking-wide flex items-center justify-center gap-4"
+                          style={{ animationDelay: "0.2s" }}
+                        >
                           <span>Restaurant</span>
                           <span className="text-[#d3cbc2] text-xl">✦</span>
                           <span>Pizzeria</span>
                           <span className="text-[#d3cbc2] text-xl">✦</span>
                           <span>Lounge Bar</span>
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up" style={{animationDelay: '0.3s'}}>
+                        <div
+                          className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up"
+                          style={{ animationDelay: "0.3s" }}
+                        >
                           <Link href="/menu">
                             <Button
                               size="lg"
@@ -108,7 +129,12 @@ export default function Home() {
         </Carousel>
       </section>
 
-      <section ref={section1.ref} className={`py-24 md:py-32 bg-gradient-to-b from-white via-gray-50/30 to-white scroll-animate ${section1.isVisible ? 'visible' : ''}`}>
+      <section
+        ref={section1.ref}
+        className={`py-24 md:py-32 bg-gradient-to-b from-white via-gray-50/30 to-white scroll-animate ${
+          section1.isVisible ? "visible" : ""
+        }`}
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 tracking-tight leading-tight">
@@ -116,25 +142,49 @@ export default function Home() {
             </h2>
             <div className="w-32 h-1.5 bg-gradient-to-r from-transparent via-[#d3cbc2] to-transparent mx-auto mb-10 rounded-full shadow-lg"></div>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Depuis 17 ans, nous vous accueillons dans notre restaurant à Onex pour vous faire découvrir
-              les saveurs authentiques de la cuisine italienne et française. Nos pizzas au feu de bois
-              et notre ambiance lounge bar créent une expérience culinaire unique.
+              Depuis 17 ans, nous vous accueillons dans notre restaurant à Onex
+              pour vous faire découvrir les saveurs authentiques de la cuisine
+              italienne et française. Nos pizzas au feu de bois et notre
+              ambiance lounge bar créent une expérience culinaire unique.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-7xl mx-auto">
             {[
-              { icon: Pizza, title: 'Pizza au Feu de Bois', desc: 'Découvrez nos pizzas cuites au feu de bois selon la tradition italienne authentique.', delay: '0s' },
-              { icon: Utensils, title: 'Cuisine Italienne & Française', desc: 'Une carte variée mêlant traditions culinaires italiennes et françaises.', delay: '0.1s' },
-              { icon: Wine, title: 'Lounge Bar', desc: 'Profitez de notre bar dans une ambiance chaleureuse et conviviale.', delay: '0.2s' }
+              {
+                icon: Pizza,
+                title: "Pizza au Feu de Bois",
+                desc: "Découvrez nos pizzas cuites au feu de bois selon la tradition italienne authentique.",
+                delay: "0s",
+              },
+              {
+                icon: Utensils,
+                title: "Cuisine Italienne & Française",
+                desc: "Une carte variée mêlant traditions culinaires italiennes et françaises.",
+                delay: "0.1s",
+              },
+              {
+                icon: Wine,
+                title: "Lounge Bar",
+                desc: "Profitez de notre bar dans une ambiance chaleureuse et conviviale.",
+                delay: "0.2s",
+              },
             ].map((item, idx) => (
-              <Card key={idx} className="border-none shadow-2xl hover-lift overflow-hidden group relative bg-white rounded-2xl" style={{transitionDelay: item.delay}}>
+              <Card
+                key={idx}
+                className="border-none shadow-2xl hover-lift overflow-hidden group relative bg-white rounded-2xl"
+                style={{ transitionDelay: item.delay }}
+              >
                 <CardContent className="p-12 text-center relative z-10">
                   <div className="w-28 h-28 bg-gradient-to-br from-[#d3cbc2] to-[#b8af9f] rounded-full flex items-center justify-center mx-auto mb-8 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-2xl animate-float">
                     <item.icon className="w-14 h-14 text-white group-hover:scale-110 transition-transform duration-500" />
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-5 text-gray-900 group-hover:text-[#d3cbc2] transition-colors duration-300">{item.title}</h3>
-                  <p className="text-gray-600 leading-relaxed text-base md:text-lg">{item.desc}</p>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-5 text-gray-900 group-hover:text-[#d3cbc2] transition-colors duration-300">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed text-base md:text-lg">
+                    {item.desc}
+                  </p>
                   <div className="absolute inset-0 bg-gradient-to-t from-[#d3cbc2]/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-2xl"></div>
                 </CardContent>
               </Card>
@@ -143,12 +193,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section ref={section2.ref} className={`py-24 md:py-32 bg-white scroll-animate ${section2.isVisible ? 'visible' : ''}`}>
+      <section
+        ref={section2.ref}
+        className={`py-24 md:py-32 bg-white scroll-animate ${
+          section2.isVisible ? "visible" : ""
+        }`}
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center max-w-7xl mx-auto">
             <div>
               <div className="inline-block bg-[#d3cbc2]/10 px-6 py-3 rounded-full mb-8">
-                <span className="text-[#b8af9f] font-bold text-sm tracking-wide uppercase">Événements Spéciaux</span>
+                <span className="text-[#b8af9f] font-bold text-sm tracking-wide uppercase">
+                  Événements Spéciaux
+                </span>
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
                 Notre Restaurant
@@ -158,10 +215,13 @@ export default function Home() {
                   <Music className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">Tous les Vendredis et Samedis</h3>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
+                    Tous les Vendredis et Samedis
+                  </h3>
                   <p className="text-gray-600 leading-relaxed text-lg md:text-xl">
-                    Venez profiter de nos soirées musicales pour une ambiance festive et conviviale.
-                    Une expérience unique qui allie gastronomie et divertissement.
+                    Venez profiter de nos soirées musicales pour une ambiance
+                    festive et conviviale. Une expérience unique qui allie
+                    gastronomie et divertissement.
                   </p>
                 </div>
               </div>
@@ -171,13 +231,18 @@ export default function Home() {
                   <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300">
                     <Clock className="w-7 h-7 text-[#d3cbc2]" />
                   </div>
-                  <span className="text-gray-700 text-lg md:text-xl font-semibold">Ouvert 7j/7 de 07:30 à 00:00</span>
+                  <span className="text-gray-700 text-lg md:text-xl font-semibold">
+                    Ouvert 7j/7 de 07:30 à 00:00
+                  </span>
                 </div>
                 <div className="flex items-center space-x-5 group cursor-pointer hover:translate-x-2 transition-all duration-300">
                   <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300">
                     <Phone className="w-7 h-7 text-[#d3cbc2]" />
                   </div>
-                  <a href="tel:+41227930350" className="text-gray-700 hover:text-[#d3cbc2] text-lg md:text-xl font-semibold transition-colors">
+                  <a
+                    href="tel:+41227930350"
+                    className="text-gray-700 hover:text-[#d3cbc2] text-lg md:text-xl font-semibold transition-colors"
+                  >
                     +41 22 793 03 50
                   </a>
                 </div>
@@ -185,7 +250,9 @@ export default function Home() {
                   <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300">
                     <MapPin className="w-7 h-7 text-[#d3cbc2]" />
                   </div>
-                  <span className="text-gray-700 text-lg md:text-xl font-semibold">Chemin de l&apos;Echo 3, 1213 Onex, Suisse</span>
+                  <span className="text-gray-700 text-lg md:text-xl font-semibold">
+                    Chemin de l&apos;Echo 3, 1213 Onex, Suisse
+                  </span>
                 </div>
               </div>
             </div>
@@ -228,7 +295,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section ref={section3.ref} className={`py-24 md:py-32 bg-gradient-to-br from-[#d3cbc2] via-[#d3cbc2] to-[#b8af9f] relative overflow-hidden scroll-animate ${section3.isVisible ? 'visible' : ''}`}>
+      <section
+        ref={section3.ref}
+        className={`py-24 md:py-32 bg-gradient-to-br from-[#d3cbc2] via-[#d3cbc2] to-[#b8af9f] relative overflow-hidden scroll-animate ${
+          section3.isVisible ? "visible" : ""
+        }`}
+      >
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -240,13 +312,21 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 lg:gap-16">
               {[
-                { emoji: '♿', label: 'Accessible PMR', delay: '0s' },
-                { emoji: '🥡', label: 'Plats à Emporter', delay: '0.5s' },
-                { emoji: '📅', label: 'Réservations', delay: '1s' },
-                { emoji: '🍷', label: 'Service de Table', delay: '1.5s' }
+                { emoji: "♿", label: "Accessible PMR", delay: "0s" },
+                { emoji: "🥡", label: "Plats à Emporter", delay: "0.5s" },
+                { emoji: "📅", label: "Réservations", delay: "1s" },
+                { emoji: "🍷", label: "Service de Table", delay: "1.5s" },
               ].map((item, idx) => (
-                <div key={idx} className="text-white group hover:scale-110 transition-transform duration-500">
-                  <div className="text-7xl md:text-8xl mb-6 animate-float" style={{animationDelay: item.delay}}>{item.emoji}</div>
+                <div
+                  key={idx}
+                  className="text-white group hover:scale-110 transition-transform duration-500"
+                >
+                  <div
+                    className="text-7xl md:text-8xl mb-6 animate-float"
+                    style={{ animationDelay: item.delay }}
+                  >
+                    {item.emoji}
+                  </div>
                   <p className="font-bold text-lg md:text-xl">{item.label}</p>
                 </div>
               ))}
@@ -255,7 +335,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section ref={section4.ref} className={`py-24 md:py-32 bg-gradient-to-b from-gray-900 to-gray-800 text-white relative overflow-hidden scroll-animate ${section4.isVisible ? 'visible' : ''}`}>
+      <section
+        ref={section4.ref}
+        className={`py-24 md:py-32 bg-gradient-to-b from-gray-900 to-gray-800 text-white relative overflow-hidden scroll-animate ${
+          section4.isVisible ? "visible" : ""
+        }`}
+      >
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#d3cbc2] rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#d3cbc2] rounded-full blur-3xl"></div>
@@ -266,17 +351,25 @@ export default function Home() {
               Réservez Votre Table
             </h2>
             <p className="text-xl md:text-2xl mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Pour profiter de notre cuisine et de notre ambiance unique, réservez dès maintenant votre table.
+              Pour profiter de notre cuisine et de notre ambiance unique,
+              réservez dès maintenant votre table.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center">
               <a href="tel:+41227930350">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#d3cbc2] to-[#b8af9f] hover:from-[#b8af9f] hover:to-[#d3cbc2] text-gray-900 font-bold text-lg md:text-xl px-10 py-7 shadow-2xl hover:shadow-[#d3cbc2]/70 transition-all duration-500 hover:scale-110 border-2 border-white/20">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-gradient-to-r from-[#d3cbc2] to-[#b8af9f] hover:from-[#b8af9f] hover:to-[#d3cbc2] text-gray-900 font-bold text-lg md:text-xl px-10 py-7 shadow-2xl hover:shadow-[#d3cbc2]/70 transition-all duration-500 hover:scale-110 border-2 border-white/20"
+                >
                   <Phone className="w-6 h-6 mr-3" />
                   Appeler pour Réserver
                 </Button>
               </a>
               <Link href="/contact">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-[#d3cbc2] bg-transparent text-[#d3cbc2] hover:bg-[#d3cbc2] hover:text-gray-900 font-bold text-lg md:text-xl px-10 py-7 shadow-2xl transition-all duration-500 hover:scale-110">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto border-2 border-[#d3cbc2] bg-transparent text-[#d3cbc2] hover:bg-[#d3cbc2] hover:text-gray-900 font-bold text-lg md:text-xl px-10 py-7 shadow-2xl transition-all duration-500 hover:scale-110"
+                >
                   Formulaire de Contact
                 </Button>
               </Link>
