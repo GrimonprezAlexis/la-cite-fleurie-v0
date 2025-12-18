@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react';
 import { AdminGuard } from '@/components/admin-guard';
 import { AdminNav } from '@/components/admin-nav';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  doc
+} from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,14 +51,10 @@ function AdminHorairesContent() {
 
   async function fetchHours() {
     try {
-      const { data, error } = await supabase
-        .from('opening_hours')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-
-      setHours(data || []);
+      const q = query(collection(db, 'opening_hours'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as OpeningHour[];
+      setHours(items);
     } catch (error: any) {
       console.error('Error loading hours:', error);
       toast({
@@ -86,18 +90,13 @@ function AdminHorairesContent() {
   async function saveEdit(hourId: string) {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('opening_hours')
-        .update({
-          is_open: editForm.is_open,
-          open_time: editForm.open_time,
-          close_time: editForm.close_time,
-          special_note: editForm.special_note,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', hourId);
-
-      if (error) throw error;
+      await updateDoc(doc(db, 'opening_hours', hourId), {
+        is_open: editForm.is_open,
+        open_time: editForm.open_time,
+        close_time: editForm.close_time,
+        special_note: editForm.special_note,
+        updated_at: new Date().toISOString(),
+      });
 
       toast({
         title: 'Succès',

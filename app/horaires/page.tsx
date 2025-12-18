@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, OpeningHourType } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Phone, MapPin, Calendar, Sparkles } from 'lucide-react';
@@ -18,13 +19,10 @@ export default function HorairesPage() {
 
   async function fetchHours() {
     try {
-      const { data, error } = await supabase
-        .from('opening_hours')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setHours(data || []);
+      const q = query(collection(db, 'opening_hours'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setHours(items);
     } catch (error) {
       console.error('Error fetching hours:', error);
     } finally {

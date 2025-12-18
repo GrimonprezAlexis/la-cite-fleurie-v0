@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, MenuItemType } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, Image as ImageIcon, Download, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [preview, setPreview] = useState<{ url: string; type: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -17,13 +20,10 @@ export default function MenuPage() {
 
   async function fetchMenuItems() {
     try {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setMenuItems(data || []);
+      const q = query(collection(db, 'menu_items'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMenuItems(items);
     } catch (error) {
       console.error('Error fetching menu items:', error);
     } finally {
@@ -121,24 +121,48 @@ export default function MenuPage() {
                       <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
                     )}
 
-                    <a
-                      href={item.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download={item.file_name}
-                      className="block"
+                    <Button
+                      className="w-full bg-gradient-to-r from-[#d3cbc2] to-[#b8af9f] hover:from-[#b8af9f] hover:to-[#d3cbc2] text-gray-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/get-menu-url?key=${encodeURIComponent(item.storage_path)}`);
+                          const data = await res.json();
+                          if (data.url) {
+                            setPreview({ url: data.url, type: item.file_type, name: item.file_name });
+                          } else {
+                            alert('Impossible de générer le lien sécurisé');
+                          }
+                        } catch (err) {
+                          alert('Impossible de générer le lien sécurisé');
+                        }
+                      }}
                     >
-                      <Button className="w-full bg-gradient-to-r from-[#d3cbc2] to-[#b8af9f] hover:from-[#b8af9f] hover:to-[#d3cbc2] text-gray-900 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                        <Download className="w-5 h-5 mr-2" />
-                        {isPDF(item.file_type) ? 'Télécharger le PDF' : 'Voir en grand'}
-                      </Button>
-                    </a>
+                      <Download className="w-5 h-5 mr-2" />
+                      {isPDF(item.file_type) ? 'Télécharger le PDF' : 'Voir en grand'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+
+        {/* Modal de prévisualisation */}
+        <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
+          <DialogContent className="max-w-2xl w-full">
+            <DialogHeader>
+              <DialogTitle>Prévisualisation du menu</DialogTitle>
+              <DialogDescription>{preview?.name}</DialogDescription>
+            </DialogHeader>
+            {preview?.type?.startsWith('image/') ? (
+              <img src={preview.url} alt={preview.name} className="w-full max-h-[70vh] object-contain rounded" />
+            ) : preview?.type === 'application/pdf' ? (
+              <iframe src={preview.url} title={preview.name} className="w-full min-h-[70vh] rounded" />
+            ) : (
+              <div className="text-center text-gray-500">Type de fichier non supporté</div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <div className="mt-20 bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl p-10 text-center border border-gray-100 animate-scale-in">
           <div className="w-16 h-16 bg-gradient-to-br from-[#d3cbc2] to-[#b8af9f] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl animate-float">

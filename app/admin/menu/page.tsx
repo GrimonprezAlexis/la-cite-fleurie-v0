@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import { AdminGuard } from '@/components/admin-guard';
 import { AdminNav } from '@/components/admin-nav';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  orderBy,
+  query,
+  deleteDoc,
+  doc
+} from 'firebase/firestore';
+import { uploadFileToS3, deleteFileFromS3 } from '@/lib/aws-s3';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +47,7 @@ function AdminMenuContent() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [preview, setPreview] = useState<{ url: string; type: string; name: string } | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -51,14 +62,10 @@ function AdminMenuContent() {
 
   async function fetchMenuItems() {
     try {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-
-      setMenuItems(data || []);
+      const q = query(collection(db, 'menu_items'), orderBy('display_order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as MenuItem[];
+      setMenuItems(items);
     } catch (error: any) {
       console.error('Error loading menu items:', error);
       toast({
@@ -106,32 +113,20 @@ function AdminMenuContent() {
     try {
       const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const fileName = `${Date.now()}_${sanitizedFileName}`;
-      const storagePath = `${fileName}`;
+      const storagePath = `menus/${fileName}`;
+      // Upload to AWS S3
+      const fileUrl = await uploadFileToS3(formData.file, storagePath);
 
-      const { error: uploadError } = await supabase.storage
-        .from('menus')
-        .upload(storagePath, formData.file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('menus')
-        .getPublicUrl(storagePath);
-
-      const { error: dbError } = await supabase.from('menu_items').insert({
+      await addDoc(collection(db, 'menu_items'), {
         title: formData.title,
         description: formData.description || '',
-        file_url: urlData.publicUrl,
+        file_url: fileUrl,
         file_type: formData.file.type,
         file_name: formData.file.name,
         storage_path: storagePath,
         display_order: menuItems.length,
+        created_at: new Date().toISOString(),
       });
-
-      if (dbError) throw dbError;
 
       toast({
         title: 'Succès',
@@ -145,7 +140,7 @@ function AdminMenuContent() {
       console.error('Upload error:', error);
       toast({
         title: 'Erreur',
-        description: error.message || 'Échec de l\'upload du fichier',
+        description: error.message || "Échec de l'upload du fichier",
         variant: 'destructive',
       });
     } finally {
@@ -159,20 +154,14 @@ function AdminMenuContent() {
     }
 
     try {
-      const { error: storageError } = await supabase.storage
-        .from('menus')
-        .remove([item.storage_path]);
-
-      if (storageError) {
-        console.error('Storage deletion error:', storageError);
+      // Delete file from AWS S3
+      if (item.storage_path) {
+        await deleteFileFromS3(item.storage_path).catch((err) => {
+          console.error('Storage deletion error:', err);
+        });
       }
-
-      const { error: dbError } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', item.id);
-
-      if (dbError) throw dbError;
+      // Delete Firestore document
+      await deleteDoc(doc(db, 'menu_items', item.id));
 
       toast({
         title: 'Succès',
@@ -326,7 +315,19 @@ function AdminMenuContent() {
 
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => window.open(item.file_url, '_blank')}
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`/api/get-menu-url?key=${encodeURIComponent(item.storage_path)}`);
+                            const data = await res.json();
+                            if (data.url) {
+                              setPreview({ url: data.url, type: item.file_type, name: item.file_name });
+                            } else {
+                              toast({ title: 'Erreur', description: 'Impossible de générer le lien sécurisé', variant: 'destructive' });
+                            }
+                          } catch (err) {
+                            toast({ title: 'Erreur', description: 'Impossible de générer le lien sécurisé', variant: 'destructive' });
+                          }
+                        }}
                         variant="outline"
                         size="sm"
                         className="flex-1"
@@ -348,7 +349,24 @@ function AdminMenuContent() {
               ))}
             </div>
           )}
-        </div>
+
+        {/* Modal de prévisualisation */}
+        <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
+          <DialogContent className="max-w-2xl w-full">
+            <DialogHeader>
+              <DialogTitle>Prévisualisation du menu</DialogTitle>
+              <DialogDescription>{preview?.name}</DialogDescription>
+            </DialogHeader>
+            {preview?.type.startsWith('image/') ? (
+              <img src={preview.url} alt={preview.name} className="w-full max-h-[70vh] object-contain rounded" />
+            ) : preview?.type === 'application/pdf' ? (
+              <iframe src={preview.url} title={preview.name} className="w-full min-h-[70vh] rounded" />
+            ) : (
+              <div className="text-center text-gray-500">Type de fichier non supporté</div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
       </div>
     </AdminGuard>
   );
