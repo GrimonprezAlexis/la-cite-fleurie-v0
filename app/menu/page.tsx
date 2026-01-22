@@ -75,7 +75,7 @@ export default function MenuPage() {
             <p className="text-gray-600 mb-8">
               Pour plus d&apos;informations, contactez-nous au{' '}
               <a href="tel:+41227930350" className="text-[#d3cbc2] hover:text-[#b8af9f] font-semibold transition-colors">
-                +41 22 793 03 50
+                022 793 03 50
               </a>
             </p>
             <a href="tel:+41227930350">

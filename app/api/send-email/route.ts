@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     // Send client email
     await transporter.sendMail({
-      from: process.env.NEXT_PUBLIC_SMTP_FROM,
+      from: process.env.SMTP_USER,
       to: email,
       subject: "Confirmation de votre demande de contact - La Cité Fleurie",
       html: `<p>Bonjour ${name},</p>

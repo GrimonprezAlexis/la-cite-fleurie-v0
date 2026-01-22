@@ -32,24 +32,6 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      const insertResponse = await fetch(`${supabaseUrl}/rest/v1/contact_messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseKey!,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!insertResponse.ok) {
-        throw new Error('Erreur lors de l\'enregistrement du message');
-      }
-
       const emailResponse = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
@@ -194,7 +176,7 @@ export default function ContactPage() {
                         href="tel:+41227930350"
                         className="text-gray-600 hover:text-[#d3cbc2] transition-colors"
                       >
-                        +41 22 793 03 50
+                        022 793 03 50
                       </a>
                     </div>
                   </div>

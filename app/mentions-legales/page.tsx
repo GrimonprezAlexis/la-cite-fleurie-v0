@@ -22,7 +22,7 @@ export default function MentionsLegalesPage() {
               <p>
                 <strong>Téléphone :</strong>{' '}
                 <a href="tel:+41227930350" className="text-[#d3cbc2] hover:underline">
-                  +41 22 793 03 50
+                  022 793 03 50
                 </a>
               </p>
               <p>
@@ -80,7 +80,7 @@ export default function MentionsLegalesPage() {
               <p>
                 <strong>Droit d&apos;accès et de rectification :</strong> Vous disposez d&apos;un droit d&apos;accès,
                 de rectification et de suppression de vos données personnelles. Pour exercer ce droit, contactez-nous
-                au +41 22 793 03 50.
+                au 022 793 03 50.
               </p>
             </div>
           </CardContent>

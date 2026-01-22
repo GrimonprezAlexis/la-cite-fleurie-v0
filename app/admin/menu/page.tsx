@@ -13,7 +13,6 @@ import {
   deleteDoc,
   doc
 } from 'firebase/firestore';
-import { uploadFileToS3, deleteFileFromS3 } from '@/lib/aws-s3';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,13 +113,27 @@ function AdminMenuContent() {
       const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const fileName = `${Date.now()}_${sanitizedFileName}`;
       const storagePath = `menus/${fileName}`;
-      // Upload to AWS S3
-      const fileUrl = await uploadFileToS3(formData.file, storagePath);
+
+      // Upload to AWS S3 via API route
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', formData.file);
+      uploadFormData.append('key', storagePath);
+
+      const uploadResponse = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const uploadResult = await uploadResponse.json();
+
+      if (!uploadResponse.ok) {
+        throw new Error(uploadResult.error || "Échec de l'upload");
+      }
 
       await addDoc(collection(db, 'menu_items'), {
         title: formData.title,
         description: formData.description || '',
-        file_url: fileUrl,
+        file_url: uploadResult.url,
         file_type: formData.file.type,
         file_name: formData.file.name,
         storage_path: storagePath,
@@ -154,9 +167,13 @@ function AdminMenuContent() {
     }
 
     try {
-      // Delete file from AWS S3
+      // Delete file from AWS S3 via API route
       if (item.storage_path) {
-        await deleteFileFromS3(item.storage_path).catch((err) => {
+        await fetch('/api/admin/delete-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: item.storage_path }),
+        }).catch((err) => {
           console.error('Storage deletion error:', err);
         });
       }

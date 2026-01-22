@@ -89,7 +89,7 @@ export function Navigation() {
               <span className={`font-semibold text-base transition-colors duration-300 ${
                 isScrolled ? 'text-gray-900' : 'text-gray-900'
               }`}>
-                +41 22 793 03 50
+                022 793 03 50
               </span>
             </a>
           </div>
@@ -128,7 +128,7 @@ export function Navigation() {
                   className="flex items-center space-x-2 text-gray-600 hover:text-[#d3cbc2] py-2 px-4 transition-colors duration-300"
                 >
                   <Phone className="w-4 h-4" />
-                  <span>+41 22 793 03 50</span>
+                  <span>022 793 03 50</span>
                 </a>
                 <div className="flex items-start space-x-2 text-gray-600 py-2 px-4">
                   <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />

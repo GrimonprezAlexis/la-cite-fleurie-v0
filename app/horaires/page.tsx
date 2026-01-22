@@ -9,8 +9,20 @@ import { Clock, Phone, MapPin, Calendar, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+interface OpeningHour {
+  id: string;
+  day_of_week: string;
+  is_open: boolean;
+  open_time: string;
+  close_time: string;
+  special_note: string | null;
+  display_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export default function HorairesPage() {
-  const [hours, setHours] = useState<OpeningHourType[]>([]);
+  const [hours, setHours] = useState<OpeningHour[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +33,7 @@ export default function HorairesPage() {
     try {
       const q = query(collection(db, 'opening_hours'), orderBy('display_order', 'asc'));
       const querySnapshot = await getDocs(q);
-      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const items = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as OpeningHour[];
       setHours(items);
     } catch (error) {
       console.error('Error fetching hours:', error);
@@ -183,7 +195,7 @@ export default function HorairesPage() {
                   href="tel:+41227930350"
                   className="text-lg text-gray-700 hover:text-[#d3cbc2] transition-colors font-medium"
                 >
-                  +41 22 793 03 50
+                  022 793 03 50
                 </a>
               </div>
               <div className="flex items-start space-x-4 p-4 rounded-xl bg-white shadow-md hover:shadow-xl transition-shadow">

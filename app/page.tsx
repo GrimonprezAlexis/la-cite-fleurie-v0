@@ -243,7 +243,7 @@ export default function Home() {
                     href="tel:+41227930350"
                     className="text-gray-700 hover:text-[#d3cbc2] text-lg md:text-xl font-semibold transition-colors"
                   >
-                    +41 22 793 03 50
+                    022 793 03 50
                   </a>
                 </div>
                 <div className="flex items-start space-x-5 group cursor-pointer hover:translate-x-2 transition-all duration-300">

@@ -34,7 +34,7 @@ export function Footer() {
                 className="flex items-center space-x-3 hover:text-[#d3cbc2] transition-colors"
               >
                 <Phone className="w-5 h-5" />
-                <span>+41 22 793 03 50</span>
+                <span>022 793 03 50</span>
               </a>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
