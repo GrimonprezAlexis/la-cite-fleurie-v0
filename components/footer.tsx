@@ -1,7 +1,12 @@
+'use client';
+
 import Link from "next/link";
 import { Facebook, Phone, MapPin, Mail } from "lucide-react";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Footer() {
+  const { settings, phoneLink } = useSiteSettings();
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-12">
@@ -30,11 +35,11 @@ export function Footer() {
             <h3 className="text-xl font-semibold text-white mb-4">Contact</h3>
             <div className="space-y-3">
               <a
-                href="tel:+41227930350"
+                href={phoneLink}
                 className="flex items-center space-x-3 hover:text-[#d3cbc2] transition-colors"
               >
                 <Phone className="w-5 h-5" />
-                <span>022 793 03 50</span>
+                <span>{settings.phone}</span>
               </a>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />

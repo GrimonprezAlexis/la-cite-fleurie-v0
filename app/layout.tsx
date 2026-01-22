@@ -4,6 +4,7 @@ import { Playfair_Display, Inter } from 'next/font/google';
 import { Navigation } from '@/components/navigation';
 import { Footer } from '@/components/footer';
 import { Toaster } from '@/components/ui/toaster';
+import { AnnouncementBanner } from '@/components/announcement-banner';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -145,6 +146,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <AnnouncementBanner />
         <Navigation />
         <main className="min-h-screen">{children}</main>
         <Footer />

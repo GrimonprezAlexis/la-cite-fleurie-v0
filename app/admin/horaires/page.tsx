@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { useConfetti } from '@/hooks/use-confetti';
 import { Loader2, Edit, Save, X, Clock, Info, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -39,6 +40,7 @@ function AdminHorairesContent() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { fireSuccessConfetti } = useConfetti();
 
   const [editForm, setEditForm] = useState({
     is_open: true,
@@ -93,6 +95,7 @@ function AdminHorairesContent() {
         });
       }
 
+      fireSuccessConfetti();
       toast({
         title: 'Succès',
         description: 'Horaires par défaut créés avec succès',
@@ -136,6 +139,7 @@ function AdminHorairesContent() {
         });
       }
 
+      fireSuccessConfetti();
       toast({
         title: 'Succès',
         description: 'Horaires réinitialisés avec succès',
@@ -185,6 +189,7 @@ function AdminHorairesContent() {
         updated_at: new Date().toISOString(),
       });
 
+      fireSuccessConfetti();
       toast({
         title: 'Succès',
         description: 'Horaires mis à jour avec succès',

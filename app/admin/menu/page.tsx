@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useConfetti } from '@/hooks/use-confetti';
 import { Loader2, FileText, Trash2, Plus, Upload, ExternalLink } from 'lucide-react';
 import {
   Dialog,
@@ -48,6 +49,7 @@ function AdminMenuContent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [preview, setPreview] = useState<{ url: string; type: string; name: string } | null>(null);
   const { toast } = useToast();
+  const { fireSuccessConfetti } = useConfetti();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -141,6 +143,7 @@ function AdminMenuContent() {
         created_at: new Date().toISOString(),
       });
 
+      fireSuccessConfetti();
       toast({
         title: 'Succès',
         description: 'Menu ajouté avec succès',
@@ -180,6 +183,7 @@ function AdminMenuContent() {
       // Delete Firestore document
       await deleteDoc(doc(db, 'menu_items', item.id));
 
+      fireSuccessConfetti();
       toast({
         title: 'Succès',
         description: 'Menu supprimé avec succès',

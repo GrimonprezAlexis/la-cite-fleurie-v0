@@ -8,9 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Phone, MapPin, Mail, Clock, Facebook } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSiteSettings } from '@/hooks/use-site-settings';
 
 export default function ContactPage() {
   const { toast } = useToast();
+  const { settings, phoneLink } = useSiteSettings();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -173,10 +175,10 @@ export default function ContactPage() {
                     <div>
                       <p className="font-medium text-gray-900">Téléphone</p>
                       <a
-                        href="tel:+41227930350"
+                        href={phoneLink}
                         className="text-gray-600 hover:text-[#d3cbc2] transition-colors"
                       >
-                        022 793 03 50
+                        {settings.phone}
                       </a>
                     </div>
                   </div>
@@ -222,7 +224,7 @@ export default function ContactPage() {
                 <p className="text-white mb-4 text-sm">
                   Pour une réservation immédiate, appelez-nous directement.
                 </p>
-                <a href="tel:+41227930350">
+                <a href={phoneLink}>
                   <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
                     <Phone className="w-4 h-4 mr-2" />
                     Appeler maintenant

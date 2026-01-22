@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { clearAdminSession } from '@/lib/auth';
-import { LogOut, Menu as MenuIcon, Clock } from 'lucide-react';
+import { LogOut, Menu as MenuIcon, Clock, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function AdminNav() {
@@ -48,6 +48,16 @@ export function AdminNav() {
               >
                 <Clock className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Horaires</span>
+              </Button>
+            </Link>
+            <Link href="/admin/contact">
+              <Button
+                variant={isActive('/admin/contact') ? 'default' : 'ghost'}
+                size="sm"
+                className={isActive('/admin/contact') ? 'bg-[#d3cbc2] hover:bg-[#b8af9f] text-gray-900' : ''}
+              >
+                <Phone className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Contact</span>
               </Button>
             </Link>
           </div>

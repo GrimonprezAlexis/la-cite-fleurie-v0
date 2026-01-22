@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Phone, MapPin, Calendar, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useSiteSettings } from '@/hooks/use-site-settings';
 
 interface OpeningHour {
   id: string;
@@ -24,6 +25,7 @@ interface OpeningHour {
 export default function HorairesPage() {
   const [hours, setHours] = useState<OpeningHour[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings, phoneLink } = useSiteSettings();
 
   useEffect(() => {
     fetchHours();
@@ -192,10 +194,10 @@ export default function HorairesPage() {
                   <Phone className="w-7 h-7 text-white" />
                 </div>
                 <a
-                  href="tel:+41227930350"
+                  href={phoneLink}
                   className="text-lg text-gray-700 hover:text-[#d3cbc2] transition-colors font-medium"
                 >
-                  022 793 03 50
+                  {settings.phone}
                 </a>
               </div>
               <div className="flex items-start space-x-4 p-4 rounded-xl bg-white shadow-md hover:shadow-xl transition-shadow">
@@ -210,7 +212,7 @@ export default function HorairesPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <a href="tel:+41227930350">
+              <a href={phoneLink}>
                 <Button size="lg" className="bg-[#d3cbc2] hover:bg-[#b8af9f] text-gray-900 font-semibold text-lg px-8 py-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
                   <Phone className="w-6 h-6 mr-2" />
                   Réserver par téléphone

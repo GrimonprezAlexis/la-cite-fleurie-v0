@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 const restaurantImages = [
   {
@@ -48,6 +49,7 @@ export default function Home() {
   const section3 = useScrollAnimation();
   const section4 = useScrollAnimation();
   const section5 = useScrollAnimation();
+  const { settings, phoneLink } = useSiteSettings();
 
   return (
     <div className="flex flex-col overflow-hidden">
@@ -240,10 +242,10 @@ export default function Home() {
                     <Phone className="w-7 h-7 text-[#d3cbc2]" />
                   </div>
                   <a
-                    href="tel:+41227930350"
+                    href={phoneLink}
                     className="text-gray-700 hover:text-[#d3cbc2] text-lg md:text-xl font-semibold transition-colors"
                   >
-                    022 793 03 50
+                    {settings.phone}
                   </a>
                 </div>
                 <div className="flex items-start space-x-5 group cursor-pointer hover:translate-x-2 transition-all duration-300">
@@ -355,7 +357,7 @@ export default function Home() {
               réservez dès maintenant votre table.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center">
-              <a href="tel:+41227930350">
+              <a href={phoneLink}>
                 <Button
                   size="lg"
                   className="w-full sm:w-auto bg-gradient-to-r from-[#d3cbc2] to-[#b8af9f] hover:from-[#b8af9f] hover:to-[#d3cbc2] text-gray-900 font-bold text-lg md:text-xl px-10 py-7 shadow-2xl hover:shadow-[#d3cbc2]/70 transition-all duration-500 hover:scale-110 border-2 border-white/20"
