@@ -98,18 +98,26 @@ export const metadata: Metadata = {
   category: 'restaurant',
 };
 
-const jsonLd = {
+const restaurantSchema = {
   '@context': 'https://schema.org',
   '@type': 'Restaurant',
+  '@id': 'https://lacitefleurie.ch/#restaurant',
   name: 'La Cité Fleurie',
-  image: 'https://lacitefleurie.ch/og-image.jpg',
-  '@id': 'https://lacitefleurie.ch',
+  alternateName: 'La Cité Fleurie - Restaurant Pizzeria Lounge Bar',
+  description:
+    'Restaurant, Pizzeria et Lounge Bar à Onex, Genève. Cuisines italienne et française, pizzas au feu de bois. Soirées musicales les vendredis et samedis.',
+  image: [
+    'https://lacitefleurie.ch/og-image.jpg',
+  ],
   url: 'https://lacitefleurie.ch',
   telephone: '+41227930350',
-  priceRange: '$$',
+  email: 'info@lacitefleurie.ch',
+  priceRange: 'CHF 15-50',
+  currenciesAccepted: 'CHF',
+  paymentAccepted: 'Cash, Credit Card, Debit Card, Twint',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Chemin de l\'Echo 3',
+    streetAddress: "Chemin de l'Echo 3",
     addressLocality: 'Onex',
     postalCode: '1213',
     addressRegion: 'Genève',
@@ -120,23 +128,42 @@ const jsonLd = {
     latitude: 46.1839,
     longitude: 6.1013,
   },
+  hasMap: 'https://www.google.com/maps?q=Chemin+de+l%27Echo+3,+1213+Onex',
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Sunday'],
-      opens: '12:00',
-      closes: '22:00',
-    },
-    {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Friday', 'Saturday'],
-      opens: '12:00',
-      closes: '23:00',
+      dayOfWeek: [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ],
+      opens: '07:30',
+      closes: '00:00',
     },
   ],
-  servesCuisine: ['Italian', 'French', 'Pizza'],
+  servesCuisine: ['Italian', 'French', 'Pizza', 'Mediterranean'],
   acceptsReservations: 'True',
   menu: 'https://lacitefleurie.ch/menu',
+  hasMenu: 'https://lacitefleurie.ch/menu',
+  sameAs: [
+    'https://www.facebook.com/p/La-Cit%C3%A9-Fleurie-100063631886817/',
+  ],
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://lacitefleurie.ch/#website',
+  url: 'https://lacitefleurie.ch',
+  name: 'La Cité Fleurie',
+  inLanguage: 'fr-CH',
+  publisher: {
+    '@id': 'https://lacitefleurie.ch/#restaurant',
+  },
 };
 
 export default function RootLayout({
@@ -149,7 +176,11 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body className={inter.className}>

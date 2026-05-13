@@ -3,6 +3,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Notre Menu',
   description: 'Découvrez notre carte : pizzas au feu de bois, plats italiens et français, desserts maison. Restaurant La Cité Fleurie à Onex, Genève.',
+  alternates: {
+    canonical: '/menu',
+  },
   openGraph: {
     title: 'Menu - La Cité Fleurie',
     description: 'Découvrez notre carte : pizzas au feu de bois, plats italiens et français, desserts maison.',
