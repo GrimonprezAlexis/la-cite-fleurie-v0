@@ -1,72 +1,117 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Phone, MapPin, Mail, Clock, Facebook } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Phone, MapPin, Clock, Facebook, CheckCircle2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/use-site-settings';
+
+const REQUEST_TYPES = [
+  { value: 'reservation', label: 'Réservation' },
+  { value: 'evenement', label: 'Événement privé' },
+  { value: 'question', label: 'Question générale' },
+  { value: 'autre', label: 'Autre' },
+] as const;
+
+const contactSchema = z.object({
+  name: z.string().trim().min(2, 'Nom trop court').max(80, 'Nom trop long'),
+  email: z.string().trim().email('Email invalide'),
+  phone: z
+    .string()
+    .trim()
+    .max(30, 'Numéro trop long')
+    .regex(/^[\d\s+()\-./]*$/, 'Numéro invalide')
+    .optional()
+    .or(z.literal('')),
+  type: z.enum(['reservation', 'evenement', 'question', 'autre'], {
+    required_error: 'Sélectionnez un type',
+  }),
+  message: z
+    .string()
+    .trim()
+    .min(10, 'Message trop court (min 10 caractères)')
+    .max(2000, 'Message trop long (max 2000 caractères)'),
+  // Honeypot — leave empty
+  website: z.string().max(0).optional(),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
   const { toast } = useToast();
   const { settings, phoneLink } = useSiteSettings();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: '',
+  const [sent, setSent] = useState(false);
+
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      type: undefined,
+      message: '',
+      website: '',
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const messageValue = form.watch('message') ?? '';
+  const isSubmitting = form.formState.isSubmitting;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (values: ContactFormValues) => {
+    if (values.website) return; // honeypot tripped — silent drop
 
     try {
-      const emailResponse = await fetch('/api/send-email', {
+      const typeLabel =
+        REQUEST_TYPES.find((t) => t.value === values.type)?.label ?? 'Demande';
+
+      const res = await fetch('/api/send-email', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone || undefined,
+          subject: typeLabel,
+          message: values.message,
+        }),
       });
 
-      if (!emailResponse.ok) {
-        throw new Error('Erreur lors de l\'envoi de l\'email');
-      }
+      if (!res.ok) throw new Error('send_failed');
 
+      setSent(true);
+      form.reset();
       toast({
         title: 'Message envoyé',
-        description: 'Nous vous répondrons dans les plus brefs délais.',
+        description: 'Nous vous répondrons rapidement.',
       });
-
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
-    } catch (error) {
-      console.error('Error:', error);
+    } catch {
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue. Veuillez réessayer.',
+        description: 'Envoi impossible. Réessayez ou appelez-nous.',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -74,7 +119,9 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contactez-nous</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Contactez-nous
+          </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Une question, une réservation ou un événement spécial ? Nous sommes à votre écoute.
           </p>
@@ -84,83 +131,181 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <Card className="shadow-lg">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Envoyez-nous un message</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom complet *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        placeholder="Votre nom"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        placeholder="votre@email.com"
-                      />
-                    </div>
+                {sent ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
+                    <CheckCircle2 className="w-16 h-16 text-green-600 mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Message bien reçu
+                    </h2>
+                    <p className="text-gray-600 mb-6 max-w-md">
+                      Merci ! Nous vous répondrons dans les plus brefs délais à l&apos;adresse fournie.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSent(false)}
+                      className="border-[#d3cbc2]"
+                    >
+                      Envoyer un autre message
+                    </Button>
                   </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      Envoyez-nous un message
+                    </h2>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-5"
+                        noValidate
+                      >
+                        {/* Honeypot — visually hidden, ignored by users, caught bots */}
+                        <input
+                          type="text"
+                          tabIndex={-1}
+                          autoComplete="off"
+                          aria-hidden="true"
+                          className="absolute -left-[9999px] h-0 w-0 opacity-0"
+                          {...form.register('website')}
+                        />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+41 XX XXX XX XX"
-                      />
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nom complet *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Votre nom"
+                                    autoComplete="name"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">Sujet *</Label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        value={formData.subject}
-                        onChange={handleChange}
-                        required
-                        placeholder="Ex: Réservation"
-                      />
-                    </div>
-                  </div>
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="email"
+                                    placeholder="votre@email.com"
+                                    autoComplete="email"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={6}
-                      placeholder="Décrivez votre demande..."
-                    />
-                  </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Téléphone</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="tel"
+                                    placeholder="+41 XX XXX XX XX"
+                                    autoComplete="tel"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={loading}
-                    className="w-full bg-[#d3cbc2] hover:bg-[#b8af9f] text-gray-900"
-                  >
-                    {loading ? 'Envoi en cours...' : 'Envoyer le message'}
-                  </Button>
-                </form>
+                          <FormField
+                            control={form.control}
+                            name="type"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type de demande *</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionnez..." />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {REQUEST_TYPES.map((t) => (
+                                      <SelectItem key={t.value} value={t.value}>
+                                        {t.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="message"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center justify-between">
+                                <FormLabel>Message *</FormLabel>
+                                <span
+                                  className={`text-xs tabular-nums ${
+                                    messageValue.length > 1800
+                                      ? 'text-amber-600'
+                                      : 'text-gray-400'
+                                  }`}
+                                >
+                                  {messageValue.length} / 2000
+                                </span>
+                              </div>
+                              <FormControl>
+                                <Textarea
+                                  rows={6}
+                                  placeholder="Décrivez votre demande..."
+                                  maxLength={2000}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Button
+                          type="submit"
+                          size="lg"
+                          disabled={isSubmitting}
+                          className="w-full bg-[#d3cbc2] hover:bg-[#b8af9f] text-gray-900 transition-all"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Envoi en cours...
+                            </>
+                          ) : (
+                            'Envoyer le message'
+                          )}
+                        </Button>
+                      </form>
+                    </Form>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
